@@ -125,8 +125,10 @@ export const useSocket = () => {
     setNotifications([]);
   };
 
-  const markNotificationAsRead = (id: string) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  const markNotificationAsRead = (id: string | number) => {
+    setNotifications(prev =>
+      prev.map(n => (String(n.id) === String(id) ? { ...n, read: true } : n))
+    );
   };
 
   const clearStatusUpdates = () => {

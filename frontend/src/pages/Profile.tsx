@@ -229,7 +229,7 @@ const Profile: React.FC = () => {
                       {coverSrc ? (
                         <img
                           src={coverSrc}
-                          alt={exchange.book.title}
+                          alt={exchange.book?.title ?? 'Книга'}
                           className="book-cover-vertical"
                         />
                       ) : (
@@ -293,7 +293,7 @@ const Profile: React.FC = () => {
                       {coverSrc ? (
                         <img
                           src={coverSrc}
-                          alt={exchange.book.title}
+                          alt={exchange.book?.title ?? 'Книга'}
                           className="book-cover-vertical"
                         />
                       ) : (

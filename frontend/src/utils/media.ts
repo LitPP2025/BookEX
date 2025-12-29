@@ -6,9 +6,16 @@ const ensureAbsoluteUrl = (input?: string | null) => {
   if (/^https?:\/\//i.test(input)) {
     return input;
   }
-  const base = API_BASE_URL.replace(/\/$/, '');
-  const path = input.startsWith('/') ? input : `/${input}`;
-  return `${base}${path}`;
+
+  const normalizedPath = input.startsWith('/') ? input : `/${input}`;
+
+  if (/^https?:\/\//i.test(API_BASE_URL)) {
+    const base = API_BASE_URL.replace(/\/$/, '');
+    return `${base}${normalizedPath}`;
+  }
+
+  // API_BASE_URL относительный (например, "/api"), возвращаем путь без добавления базового URL
+  return normalizedPath;
 };
 
 export const getCoverUrl = (cover?: string | null, coverUrl?: string | null) => {
