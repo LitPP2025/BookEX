@@ -55,6 +55,7 @@ class SocketManager:
                         await self.sio.emit('auth_success', {'user_id': user_id_str}, to=sid)
                         if len(self.online_users[user_id_str]) == 1:
                             await self.sio.emit('user_online', {'user_id': user_id_str})
+                        await self.sio.emit('online_users', {'users': list(self.online_users.keys())}, to=sid)
                         await self.send_pending_exchanges(user_id_str)
                         return True
                 except Exception as e:
@@ -105,6 +106,7 @@ class SocketManager:
                 await self.sio.emit('auth_success', {'user_id': user_id}, to=sid)
                 if len(self.online_users[user_id]) == 1:
                     await self.sio.emit('user_online', {'user_id': user_id})
+                await self.sio.emit('online_users', {'users': list(self.online_users.keys())}, to=sid)
                 print(f"✅ Пользователь {user_id} успешно прошел аутентификацию")
                 
                 # Отправляем уведомления о новых обменах
@@ -116,6 +118,10 @@ class SocketManager:
                 print(f"❌ Ошибка аутентификации: {error_msg}")
                 await self.sio.emit('auth_error', {'error': error_msg}, to=sid)
                 return False
+
+        @self.sio.event
+        async def get_online_users(sid):
+            await self.sio.emit('online_users', {'users': list(self.online_users.keys())}, to=sid)
 
     async def send_pending_exchanges(self, user_id: str, sid: Optional[str] = None):
         """Отправка уведомлений о новых предложениях обмена"""

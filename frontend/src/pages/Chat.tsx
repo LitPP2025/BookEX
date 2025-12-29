@@ -156,12 +156,17 @@ const Chat: React.FC = () => {
     (payload: any) => {
       if (!payload?.message) return;
       const { thread_id, message, meta } = payload;
+      const normalizedThreadId = Number(thread_id);
+      if (Number.isNaN(normalizedThreadId)) return;
+
+      const activeId = activeThread?.id ?? null;
+
       setThreads(prev => {
         let found = false;
         const updated = prev.map(thread => {
-          if (thread.id === thread_id) {
+          if (thread.id === normalizedThreadId) {
             found = true;
-            const isActive = activeThread?.id === thread_id;
+            const isActive = activeId === normalizedThreadId;
             const isOwnMessage = message.sender_id === user?.id;
             return {
               ...thread,
@@ -178,11 +183,11 @@ const Chat: React.FC = () => {
         return updated;
       });
 
-      if (activeThread?.id === thread_id && message.sender_id !== user?.id) {
-        setMessages(prev => [...prev, message]);
+      if (activeId === normalizedThreadId) {
+        setMessages(prev => (prev.some(item => item.id === message.id) ? prev : [...prev, message]));
       }
     },
-    [activeThread, user?.id, fetchThreads]
+    [activeThread?.id, user?.id, fetchThreads]
   );
 
   useEffect(() => {

@@ -3,11 +3,14 @@ import { SOCKET_BASE_URL } from '../config';
 
 let socket: Socket | null = null;
 const SOCKET_URL = SOCKET_BASE_URL;
+const isRelativeSocketUrl = SOCKET_URL.startsWith('/');
+const SOCKET_ORIGIN = isRelativeSocketUrl ? window.location.origin : SOCKET_URL;
+const SOCKET_PATH = isRelativeSocketUrl ? `${SOCKET_URL}/ws/socket.io` : '/ws/socket.io';
 
 export const initSocket = () => {
   if (!socket) {
-    socket = io(SOCKET_URL, {
-      path: '/ws/socket.io',
+    socket = io(SOCKET_ORIGIN, {
+      path: SOCKET_PATH,
       transports: ['websocket'],
       autoConnect: false,
       reconnection: true,
@@ -44,6 +47,7 @@ export const connectSocket = async (token: string) => {
         });
         
         socket.on('auth_success', () => {
+          socket.emit('get_online_users');
           resolve();
         });
         
@@ -96,7 +100,11 @@ export const setupExchangeStatusUpdates = (callback: (update: any) => void) => {
 
 export const setupUserStatus = (callback: (data: { user_id: string; isOnline: boolean }) => void) => {
   const socket = initSocket();
-  
+
+  socket.on('online_users', (data: { users: string[] }) => {
+    data.users.forEach(userId => callback({ user_id: userId, isOnline: true }));
+  });
+
   socket.on('user_online', (data: { user_id: string }) => {
     callback({ user_id: data.user_id, isOnline: true });
   });
@@ -106,6 +114,7 @@ export const setupUserStatus = (callback: (data: { user_id: string; isOnline: bo
   });
   
   return () => {
+    socket.off('online_users');
     socket.off('user_online');
     socket.off('user_offline');
   };

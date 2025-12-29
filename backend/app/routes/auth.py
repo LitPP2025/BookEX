@@ -22,6 +22,7 @@ from ..security import (
     SECRET_KEY,
     ALGORITHM
 )
+from ..storage import get_book_cover_url
 from jose import JWTError, jwt
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
@@ -150,6 +151,8 @@ def get_user_books(
     current_user: User = Depends(get_current_user)  # Можно убрать эту зависимость для публичного доступа
 ):
     books = db.query(Book).filter(Book.owner_id == user_id, Book.status == "available").options(joinedload(Book.owner)).all()
+    for book in books:
+        book.cover_url = get_book_cover_url(book.cover)
     return books
 
 @router.put("/profile", response_model=UserResponse)
